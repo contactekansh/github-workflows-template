@@ -137,7 +137,7 @@ jobs:
           
       - name: Fetch ConfigMap
         run: |
-          git clone -b ${{ branch }} https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_repo_name }}.git
+          git clone -b ${{ inputs.branch }} https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_repo_name }}.git
           aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region ${{ inputs.region }}
           # kubectl create configmap ${{ inputs.config_map_name }}  --from-file=Common_Properties_BE/${{ inputs.properties_file }} --namespace=${{ inputs.namespace }}  -o yaml --dry-run | kubectl apply -f  -
           kubectl create configmap ${{ inputs.common_config_map_name }}  --from-file=Common_Properties_BE/${{ inputs.common_properties_file }} --namespace=${{ inputs.namespace }}  -o yaml --dry-run | kubectl apply -f  -
