@@ -151,7 +151,7 @@ jobs:
         shell: bash
         run: |
             aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region ${{ inputs.region }}
-            helm upgrade --install ${{ inputs.service_name }} ${{ inputs.github_devops_repo_name }}/helm_chart -f devops/helm/${{ inputs.helm_value_file }} --set Deployment.Image.Tag=${{ github.sha }} -n ${{ inputs.namespace }}
+            helm upgrade --install ${{ inputs.deployment_name }} ${{ inputs.github_devops_repo_name }}/helm_chart -f devops/helm/${{ inputs.helm_value_file }} --set Deployment.Image.Tag=${{ github.sha }} -n ${{ inputs.namespace }}
     
       - name: Rollout status
         shell: bash
