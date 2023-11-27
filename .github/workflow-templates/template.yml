@@ -57,6 +57,15 @@ on:
       github_token:  
         default: 'xyz'
         type: string
+      github_org:  
+        default: 'xyz'
+        type: string
+      github_devops_repo_name:  
+        default: 'xyz'
+        type: string
+      github_repo_name:  
+        default: 'xyz'
+        type: string
   
 permissions:
   id-token: write
