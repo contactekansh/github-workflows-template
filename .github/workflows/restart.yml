@@ -1,0 +1,101 @@
+name: Template
+
+on:
+  workflow_call:
+    inputs:
+      branch_name:
+        default: 'xyz'
+        type: string
+      java_version:
+        default: 'xyz'
+        type: string
+      java_distribution:
+        default: 'xyz'
+        type: string
+      cluster_name:
+        default: 'xyz'
+        type: string
+      helm_value_file:
+        default: 'xyz'
+        type: string
+      dockerfile_name:
+        default: 'xyz'
+        type: string
+      iam_role:
+        default: 'xyz'
+        type: string
+      service_name:
+        default: 'xyz'
+        type: string
+      region:
+        default: 'xyz'
+        type: string
+      # config_map_name:
+      #   default: 'xyz'
+      #   type: string
+      common_config_map_name:
+        default: 'xyz'
+        type: string
+      # properties_file:
+      #   default: 'xyz'
+      #   type: string
+      common_properties_file:
+        default: 'xyz'
+        type: string
+      s3_dependency_bucket_name:
+        default: 'xyz'
+        type: string
+      ecr_registry: 
+        default: 'xyz'
+        type: string
+      namespace: 
+        default: 'xyz'
+        type: string
+      deployment_name: 
+        default: 'xyz'
+        type: string
+      github_token:  
+        default: 'xyz'
+        type: string
+      github_org:  
+        default: 'xyz'
+        type: string
+      github_devops_repo_name:  
+        default: 'xyz'
+        type: string
+      github_repo_name:  
+        default: 'xyz'
+        type: string
+      branch:
+        default: 'qa'
+        type: string
+  
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build_artifact_and_deploy_to_qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Assume IAM Role to perform AWS task
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ inputs.iam_role }}
+          aws-region: ${{ inputs.region }}
+          
+      - name: Helm chart deployement
+        shell: bash
+        run: |
+            aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region ${{ inputs.region }}
+  
+      - name: Restart Deployment
+        shell: bash
+        run: |
+            if ! kubectl rollout restart deploy/${{ inputs.deployment_name }} -n ${{ inputs.namespace }} --timeout=300s; then
+              echo "Restart failed"
+              exit 1
+            fi
