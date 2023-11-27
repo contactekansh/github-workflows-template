@@ -1,0 +1,150 @@
+name: Template
+
+on:
+  workflow_call:
+    inputs:
+      branch_name:
+        default: 'xyz'
+        type: string
+      java_version:
+        default: 'xyz'
+        type: string
+      java_distribution:
+        default: 'xyz'
+        type: string
+      cluster_name:
+        default: 'xyz'
+        type: string
+      helm_value_file:
+        default: 'xyz'
+        type: string
+      dockerfile_name:
+        default: 'xyz'
+        type: string
+      iam_role:
+        default: 'xyz'
+        type: string
+      service_name:
+        default: 'xyz'
+        type: string
+      region:
+        default: 'xyz'
+        type: string
+      # config_map_name:
+      #   default: 'xyz'
+      #   type: string
+      common_config_map_name:
+        default: 'xyz'
+        type: string
+      # properties_file:
+      #   default: 'xyz'
+      #   type: string
+      common_properties_file:
+        default: 'xyz'
+        type: string
+      s3_dependency_bucket_name:
+        default: 'xyz'
+        type: string
+      ecr_registry: 
+        default: 'xyz'
+        type: string
+      namespace: 
+        default: 'xyz'
+        type: string
+      deployment_name: 
+        default: 'xyz'
+        type: string
+      github_token:  
+        default: 'xyz'
+        type: string
+  
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build_artifact_and_deploy_to_qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ inputs.java_version }}
+          distribution: ${{ inputs.java_distribution }}
+
+      - name: Assume IAM Role to perform AWS task
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ inputs.iam_role }}
+          aws-region: ${{ inputs.region }}
+          
+      - name: Deploy dist folder to s3
+        run: |
+          aws s3 sync s3://${{ inputs.s3_dependency_bucket_name }}/ dependency/
+      
+      - name: Installing dependencies
+        run: |
+          for file in dependency/*.jar; do
+            mvn install:install-file -Dfile="$file"
+          done
+          
+      - name: Build with Maven
+        run: mvn clean package -Dmaven.test.skip=true
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact
+          path: target/*.jar
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry: ${{ inputs.ecr_registry }}
+            
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: devops/${{ inputs.dockerfile_name }}
+          dockerfile: devops/${{ inputs.dockerfile_name }}
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.service_name }}:${{ github.sha }}
+          
+      - name: Fetch ConfigMap
+        run: |
+          git clone -b ${{ branch }} https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_repo_name }}.git
+          aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region ${{ inputs.region }}
+          # kubectl create configmap ${{ inputs.config_map_name }}  --from-file=Common_Properties_BE/${{ inputs.properties_file }} --namespace=${{ inputs.namespace }}  -o yaml --dry-run | kubectl apply -f  -
+          kubectl create configmap ${{ inputs.common_config_map_name }}  --from-file=Common_Properties_BE/${{ inputs.common_properties_file }} --namespace=${{ inputs.namespace }}  -o yaml --dry-run | kubectl apply -f  -
+    
+      - name: clone helm repo
+        run: |
+          git clone https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_devops_repo_name }}.git
+        shell: bash
+          
+      - name: Helm chart deployement
+        shell: bash
+        run: |
+            aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region ${{ inputs.region }}
+            helm upgrade --install ${{ inpupts.service_name }} ${{ inputs.github_devops_repo_name }}/helm_chart -f devops/helm/${{ inputs.helm_value_file }} --set Deployment.Image.Tag=${{ github.sha }} -n ${{ inputs.namespace }}
+    
+      - name: Rollout status
+        shell: bash
+        run: |
+            if ! kubectl rollout status deploy/${{ inputs.deployment_name }} -n ${{ inputs.namespace }} --timeout=300s; then
+              echo "Rollout status check failed"
+              exit 1
+            fi
