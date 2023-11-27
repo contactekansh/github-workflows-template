@@ -94,3 +94,15 @@ jobs:
           # kubectl create configmap ${{ inputs.config_map_name }}  --from-file=Common_Properties_BE/${{ inputs.properties_file }} --namespace=${{ inputs.namespace }}  -o yaml --dry-run | kubectl apply -f  -
           kubectl create configmap ${{ inputs.common_config_map_name }}  --from-file=Common_Properties_BE/${{ inputs.common_properties_file }} --namespace=${{ inputs.namespace }}  -o yaml --dry-run | kubectl apply -f  -
       
+      - name: Helm chart deployement
+        shell: bash
+        run: |
+            aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region ${{ inputs.region }}
+  
+      - name: Restart Deployment
+        shell: bash
+        run: |
+            if ! kubectl rollout restart deploy/${{ inputs.deployment_name }} -n ${{ inputs.namespace }} --timeout=300s; then
+              echo "Restart failed"
+              exit 1
+            fi
