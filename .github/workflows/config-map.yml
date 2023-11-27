@@ -86,13 +86,7 @@ jobs:
         with:
           role-to-assume: ${{ inputs.iam_role }}
           aws-region: ${{ inputs.region }}
-     
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          registry: ${{ inputs.ecr_registry }}       
-          
+               
       - name: Fetch ConfigMap
         run: |
           git clone -b ${{ inputs.branch }} https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_repo_name }}.git
