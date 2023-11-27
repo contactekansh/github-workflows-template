@@ -66,6 +66,9 @@ on:
       github_repo_name:  
         default: 'xyz'
         type: string
+      branch:
+        default: 'qa'
+        type: string
   
 permissions:
   id-token: write
