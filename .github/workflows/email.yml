@@ -15,6 +15,18 @@ on:
       healthCheck:
         default: 'xyz'
         type: string
+      server_address:
+        default: 'xyz'
+        type: string
+      server_port:
+        default: 'xyz'
+        type: string
+      username:
+        default: 'xyz'
+        type: string
+      password:
+        default: 'xyz'
+        type: string
 
 permissions:
   id-token: write
@@ -28,10 +40,10 @@ jobs:
         if: ${{ always() }}
         uses: dawidd6/action-send-mail@v3.6.0
         with:
-          server_address: ${{ vars.SMTP_SERVER_ORG_VARIABLE }}
-          server_port: ${{ vars.SMTP_PORT_ORG_VARIABLE }}
-          username:  ${{ vars.QA_SMTP_USERNAME_ORG_VARIABLE }}
-          password: ${{ secrets.QA_SMTP_PASSWORD_ORG_SECRET }}
+          server_address: ${{ inputs.server_address }}
+          server_port: ${{ inputs.server_port }}
+          username:  ${{ inputs.username }}
+          password: ${{ inputs.password }}
           to: ${{ inputs.to }}
           subject: ${{ github.repository }}-Build-${{ github.run_number }} is ${{ job.status }}
   #        secure: true
