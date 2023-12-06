@@ -45,7 +45,7 @@ jobs:
           username:  ${{ inputs.username }}
           password: ${{ inputs.password }}
           to: ${{ inputs.to }}
-          subject: ${{ github.repository }}-Build-${{ github.run_number }} is ${{ job.status }} : ${{ inputs.env }}
+          subject: ${{ github.repository }}-Build-${{ github.run_number }} is ${{ job.status }}
   #        secure: true
           from: ${{ inputs.from }}
           html_body: |
