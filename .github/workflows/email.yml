@@ -2,6 +2,9 @@ name: Email Template
 
 on:
   workflow_call:
+    secrets:
+      password:
+        required: true
     inputs:
       to:
         default: 'xyz'
@@ -24,9 +27,6 @@ on:
       username:
         default: 'xyz'
         type: string
-      password:
-        default: 'xyz'
-        type: string
 
 permissions:
   id-token: write
@@ -43,7 +43,7 @@ jobs:
           server_address: ${{ inputs.server_address }}
           server_port: ${{ inputs.server_port }}
           username:  ${{ inputs.username }}
-          password: ${{ inputs.password }}
+          password: ${{ secrets.password }}
           to: ${{ inputs.to }}
           subject: ${{ github.repository }}-Build-${{ github.run_number }} is ${{ job.status }}
   #        secure: true
