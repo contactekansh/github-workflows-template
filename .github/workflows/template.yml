@@ -42,6 +42,9 @@ on:
       common_properties_file_name:
         default: 'xyz'
         type: string
+      download_dependency_from_s3:
+        default: false
+        type: boolean
       s3_dependency_bucket_name:
         default: 'xyz'
         type: string
@@ -105,10 +108,12 @@ jobs:
           aws-region: ${{ inputs.region }}
           
       - name: Deploy dist folder to s3
+        if: ${{ inputs.download_dependency_from_s3 == true }}
         run: |
           aws s3 sync s3://${{ inputs.s3_dependency_bucket_name }}/ dependency/
       
       - name: Installing dependencies
+        if: ${{ inputs.download_dependency_from_s3 == true }}
         run: |
           for file in dependency/*.jar; do
             mvn install:install-file -Dfile="$file"
@@ -118,6 +123,7 @@ jobs:
         run: mvn clean package -Dmaven.test.skip=true
   
       # - name: Add release
+      #   if: ${{ inputs.add_git_release == true }}
       #   run: |   
       #     git_tag_name=`git describe --abbrev=0 --tags`
       #     DATE=$(date +%Y-%m-%d-%H-%M)
@@ -126,6 +132,7 @@ jobs:
       #     echo -e "commit_id=$git_commit_id \nAuthor=$git_author_name \nBranch/TAG_NAME=qa/$git_tag_name \nDate=$DATE" > src/main/resources/tag_details.txt
   
       # - name: Update health check
+      #   if: ${{ inputs.update_health_check_page == true }}
       #   run: |   
       #     old_value=`cat src/DevopsTestPageResource.java | grep -n "String response" | cut  -d ':' -f 1`
       #     echo $old_value
