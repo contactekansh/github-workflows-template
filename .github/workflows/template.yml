@@ -173,12 +173,12 @@ jobs:
           aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region ${{ inputs.region }}
 
       - name: Create ConfigMap for common properties file (if provided)
-        if: ${{ ne(inputs.common_config_map_name, '') && ne(inputs.common_properties_file_name, '') }}
+        if: ${{ inputs.common_config_map_name != '' && inputs.common_properties_file_name != '' }}
         run: |
           kubectl create configmap ${{ inputs.common_config_map_name }} --from-file=Common_Properties_BE/${{ inputs.common_properties_file_name }} --namespace=${{ inputs.namespace }} -o yaml --dry-run | kubectl apply -f -
           
       - name: Create ConfigMap for service properties file (if provided)
-        if: ${{ ne(inputs.svc_config_map_name, '') && ne(inputs.svc_properties_file_name, '') }}
+        if: ${{ inputs.svc_config_map_name != '' && inputs.svc_properties_file_name != '' }}
         run: |
           kubectl create configmap ${{ inputs.svc_config_map_name }} --from-file=Common_Properties_BE/${{ inputs.svc_properties_file_name }} --namespace=${{ inputs.namespace }} -o yaml --dry-run | kubectl apply -f -
       
