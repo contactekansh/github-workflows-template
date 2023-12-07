@@ -45,6 +45,12 @@ on:
       download_dependency_from_s3:
         default: false
         type: boolean
+      add_git_release:
+        default: false
+        type: boolean
+      update_health_check_page:
+        default: false
+        type: boolean
       s3_dependency_bucket_name:
         default: 'xyz'
         type: string
