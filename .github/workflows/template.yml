@@ -172,7 +172,7 @@ jobs:
           
       - name: Fetch ConfigMap
         run: |
-          git clone -b ${{ inputs.branch }} https://${{ secrets.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_common_properties_repo_name }}.git
+          git clone -b ${{ inputs.branch }} https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_common_properties_repo_name }}.git
           aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region ${{ inputs.region }}
 
       - name: Create ConfigMap for common properties file (if provided)
@@ -187,7 +187,7 @@ jobs:
       
       - name: clone helm repo
         run: |
-          git clone https://${{ secrets.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_devops_repo_name }}.git
+          git clone https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_devops_repo_name }}.git
         shell: bash
           
       - name: Helm chart deployement
