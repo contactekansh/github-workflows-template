@@ -167,19 +167,21 @@ jobs:
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.service_name }}:${{ github.sha }}
           
-      - name: Fetch ConfigMap and Create ConfigMaps if provided
+      - name: Fetch ConfigMap
         run: |
           git clone -b ${{ inputs.branch }} https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_common_properties_repo_name }}.git
           aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region ${{ inputs.region }}
-      
-          if [[ -n "${{ inputs.common_config_map_name }}" && -n "${{ inputs.common_properties_file_name }}" ]]; then
-            kubectl create configmap ${{ inputs.common_config_map_name }} --from-file=Common_Properties_BE/${{ inputs.common_properties_file_name }} --namespace=${{ inputs.namespace }} -o yaml --dry-run | kubectl apply -f -
-          fi
-      
-          if [[ -n "${{ inputs.svc_config_map_name }}" && -n "${{ inputs.svc_properties_file_name }}" ]]; then
-            kubectl create configmap ${{ inputs.svc_config_map_name }} --from-file=Common_Properties_BE/${{ inputs.svc_properties_file_name }} --namespace=${{ inputs.namespace }} -o yaml --dry-run | kubectl apply -f -
-          fi
 
+      - name: Create ConfigMap for common properties file (if provided)
+        if: ${{ inputs.common_config_map_name != '' && inputs.common_properties_file_name != '' }}
+        run: |
+          kubectl create configmap ${{ inputs.common_config_map_name }} --from-file=Common_Properties_BE/${{ inputs.common_properties_file_name }} --namespace=${{ inputs.namespace }} -o yaml --dry-run | kubectl apply -f -
+          
+      - name: Create ConfigMap for service properties file (if provided)
+        if: ${{ inputs.svc_config_map_name != '' && inputs.svc_properties_file_name != '' }}
+        run: |
+          kubectl create configmap ${{ inputs.svc_config_map_name }} --from-file=Common_Properties_BE/${{ inputs.svc_properties_file_name }} --namespace=${{ inputs.namespace }} -o yaml --dry-run | kubectl apply -f -
+      
       - name: clone helm repo
         run: |
           git clone https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_devops_repo_name }}.git
