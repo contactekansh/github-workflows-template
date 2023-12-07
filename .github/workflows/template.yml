@@ -31,16 +31,16 @@ on:
         default: 'xyz'
         type: string
       svc_config_map_name:
-        default: 'xyz'
+        default: ''
         type: string
       common_config_map_name:
-        default: 'xyz'
+        default: ''
         type: string
       svc_properties_file_name:
-        default: 'xyz'
+        default: ''
         type: string
       common_properties_file_name:
-        default: 'xyz'
+        default: ''
         type: string
       download_dependency_from_s3:
         default: false
