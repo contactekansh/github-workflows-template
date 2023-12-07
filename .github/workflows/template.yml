@@ -2,6 +2,9 @@ name: Template
 
 on:
   workflow_call:
+    secrets:
+      github_token:
+        required: true
     inputs:
       branch_name:
         default: 'xyz'
@@ -169,7 +172,7 @@ jobs:
           
       - name: Fetch ConfigMap
         run: |
-          git clone -b ${{ inputs.branch }} https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_common_properties_repo_name }}.git
+          git clone -b ${{ inputs.branch }} https://${{ secrets.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_common_properties_repo_name }}.git
           aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region ${{ inputs.region }}
 
       - name: Create ConfigMap for common properties file (if provided)
