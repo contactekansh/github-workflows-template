@@ -69,9 +69,6 @@ on:
       release_name: 
         default: 'xyz'
         type: string
-      github_token:  
-        default: 'xyz'
-        type: string
       github_org:  
         default: 'xyz'
         type: string
@@ -187,7 +184,7 @@ jobs:
       
       - name: clone helm repo
         run: |
-          git clone https://${{ inputs.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_devops_repo_name }}.git
+          git clone https://${{ secrets.github_token }}@github.com/${{ inputs.github_org }}/${{ inputs.github_devops_repo_name }}.git
         shell: bash
           
       - name: Helm chart deployement
