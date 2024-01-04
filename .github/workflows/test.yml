@@ -27,6 +27,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '8'
+          distribution: 'zulu'
 
       - name: Build with Maven
         run: mvn package -e -Dmaven.test.skip=true
